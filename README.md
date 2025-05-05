@@ -1,0 +1,2 @@
+# PyNBTExplorer
+NBTExplorer for python
