@@ -1,5 +1,6 @@
 # PyNBTExplorer
 ## 运行
+先下载本存储库
 #### 1. 安装依赖
 ```bash
 pip install nbtlib
