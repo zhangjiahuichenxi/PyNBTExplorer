@@ -16,7 +16,7 @@ class NBTExplorer:
         self.root.geometry("1000x700")
 
         try:
-            icon_img = tk.PhotoImage(file="./png/icon.png")
+            icon_img = tk.PhotoImage(file="./icon.png")
             self.root.iconphoto(False, icon_img)
         except:
             pass
@@ -708,7 +708,7 @@ class NBTExplorer:
     def show_about(self):
         about_text = (
             "PyNBTExplorer\n"
-            "版本: 25565.2\n\n"
+            "版本: 1.0\n\n"
             "一个用Python实现的NBT文件浏览器\n"
             "使用tkinter作为UI框架，nbtlib处理NBT文件\n\n"
             "主要功能:\n"
@@ -718,7 +718,6 @@ class NBTExplorer:
             "- 添加/删除节点\n"
             "- 查找节点\n"
             "- 保存修改后的文件\n\n"
-            "© 114514 PyNBTExplorer 项目"
         )
         messagebox.showinfo("关于 PyNBTExplorer", about_text)
 
