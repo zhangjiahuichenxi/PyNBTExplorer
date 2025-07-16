@@ -6,7 +6,6 @@
 pip install nbtlib
 # 如有tkinter请跳过
 # pip install tk
-pip install pillow
 pip install ttkbootstrap
 ```
 #### 2. 直接打开main.py即可
