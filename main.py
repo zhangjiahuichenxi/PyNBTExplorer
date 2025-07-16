@@ -1,22 +1,23 @@
-import tkinter as tk
-from tkinter import ttk, filedialog, messagebox, simpledialog
+import ttkbootstrap as ttk
+from tkinter import filedialog, messagebox, simpledialog
 import nbtlib
 from nbtlib.tag import Int, String, Float, Compound, List, Byte, Short, Long, Double, ByteArray, IntArray, LongArray
 import platform
 import subprocess
 import os
+import config
 import re
 from PIL import Image, ImageTk
 
 
 class NBTExplorer:
     def __init__(self, filepath=""):
-        self.root = tk.Tk()
+        self.root = ttk.Window(themename=config.theme)
         self.root.title("PyNBTExplorer")
         self.root.geometry("1000x700")
 
         try:
-            icon_img = tk.PhotoImage(file="./icon.png")
+            icon_img = ttk.PhotoImage(file="./icon.png")
             self.root.iconphoto(False, icon_img)
         except:
             pass
@@ -31,49 +32,49 @@ class NBTExplorer:
 
         self.create_toolbar()
 
-        self.status_var = tk.StringVar()
-        self.status_bar = tk.Label(self.root, textvariable=self.status_var, bd=1, relief=tk.SUNKEN, anchor=tk.W)
-        self.status_bar.pack(side=tk.BOTTOM, fill=tk.X)
+        self.status_var = ttk.StringVar()
+        self.status_bar = ttk.Label(self.root, textvariable=self.status_var, relief=ttk.SUNKEN, anchor=ttk.W)
+        self.status_bar.pack(side=ttk.BOTTOM, fill=ttk.X)
 
-        self.search_frame = tk.Frame(self.root, bd=1, relief=tk.RAISED)
-        self.search_frame.pack(side=tk.TOP, fill=tk.X, padx=2, pady=2)
+        self.search_frame = ttk.Frame(self.root, relief=ttk.RAISED)
+        self.search_frame.pack(side=ttk.TOP, fill=ttk.X, padx=2, pady=2)
 
-        tk.Label(self.search_frame, text="查找:").pack(side=tk.LEFT, padx=(5, 2))
-        self.search_entry = tk.Entry(self.search_frame, width=30)
-        self.search_entry.pack(side=tk.LEFT, padx=2)
+        ttk.Label(self.search_frame, text="查找:").pack(side=ttk.LEFT, padx=(5, 2))
+        self.search_entry = ttk.Entry(self.search_frame, width=30)
+        self.search_entry.pack(side=ttk.LEFT, padx=2)
         self.search_entry.bind("<Return>", lambda e: self.find_next())
 
-        self.search_btn = tk.Button(self.search_frame, text="查找", command=self.find_next)
-        self.search_btn.pack(side=tk.LEFT, padx=2)
+        self.search_btn = ttk.Button(self.search_frame, text="查找", command=self.find_next)
+        self.search_btn.pack(side=ttk.LEFT, padx=2)
 
-        self.prev_btn = tk.Button(self.search_frame, text="上一个", command=self.find_prev)
-        self.prev_btn.pack(side=tk.LEFT, padx=2)
+        self.prev_btn = ttk.Button(self.search_frame, text="上一个", command=self.find_prev)
+        self.prev_btn.pack(side=ttk.LEFT, padx=2)
 
-        self.next_btn = tk.Button(self.search_frame, text="下一个", command=self.find_next)
-        self.next_btn.pack(side=tk.LEFT, padx=2)
+        self.next_btn = ttk.Button(self.search_frame, text="下一个", command=self.find_next)
+        self.next_btn.pack(side=ttk.LEFT, padx=2)
 
-        tk.Label(self.search_frame, text="|").pack(side=tk.LEFT, padx=5)
+        ttk.Label(self.search_frame, text="|").pack(side=ttk.LEFT, padx=5)
 
-        self.case_sensitive_var = tk.BooleanVar()
-        self.case_chk = tk.Checkbutton(self.search_frame, text="区分大小写", variable=self.case_sensitive_var)
-        self.case_chk.pack(side=tk.LEFT, padx=2)
+        self.case_sensitive_var = ttk.BooleanVar()
+        self.case_chk = ttk.Checkbutton(self.search_frame, text="区分大小写", variable=self.case_sensitive_var)
+        self.case_chk.pack(side=ttk.LEFT, padx=2)
 
-        self.regex_var = tk.BooleanVar()
-        self.regex_chk = tk.Checkbutton(self.search_frame, text="正则表达式", variable=self.regex_var)
-        self.regex_chk.pack(side=tk.LEFT, padx=2)
+        self.regex_var = ttk.BooleanVar()
+        self.regex_chk = ttk.Checkbutton(self.search_frame, text="正则表达式", variable=self.regex_var)
+        self.regex_chk.pack(side=ttk.LEFT, padx=2)
 
-        self.paned_window = tk.PanedWindow(self.root, orient=tk.HORIZONTAL, sashrelief=tk.RAISED, sashwidth=4)
-        self.paned_window.pack(fill=tk.BOTH, expand=True)
+        self.paned_window = ttk.PanedWindow(self.root, orient=ttk.HORIZONTAL)
+        self.paned_window.pack(fill=ttk.BOTH, expand=True)
 
-        self.tree_frame = tk.Frame(self.paned_window)
+        self.tree_frame = ttk.Frame(self.paned_window)
         self.tree_scrollbar = ttk.Scrollbar(self.tree_frame)
-        self.tree_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.tree_scrollbar.pack(side=ttk.RIGHT, fill=ttk.Y)
 
         self.tree = ttk.Treeview(self.tree_frame, columns=("type", "value"),
                                  yscrollcommand=self.tree_scrollbar.set,
                                  selectmode="browse")
         self.tree_scrollbar.config(command=self.tree.yview)
-        self.tree.pack(fill=tk.BOTH, expand=True)
+        self.tree.pack(fill=ttk.BOTH, expand=True)
 
         self.tree.heading("#0", text="名称")
         self.tree.heading("type", text="类型")
@@ -81,19 +82,19 @@ class NBTExplorer:
         self.tree.column("type", width=100, minwidth=80)
         self.tree.column("value", width=150, minwidth=100)
 
-        self.detail_frame = tk.Frame(self.paned_window)
-        self.detail_label = tk.Label(self.detail_frame, text="详细信息", font=("Arial", 10, "bold"))
+        self.detail_frame = ttk.Frame(self.paned_window)
+        self.detail_label = ttk.Label(self.detail_frame, text="详细信息", font=("Arial", 10, "bold"))
         self.detail_label.pack(pady=5)
 
-        self.detail_text = tk.Text(self.detail_frame, wrap=tk.WORD, state=tk.DISABLED)
+        self.detail_text = ttk.Text(self.detail_frame, wrap=ttk.WORD, state=ttk.DISABLED)
         self.detail_scrollbar = ttk.Scrollbar(self.detail_frame, command=self.detail_text.yview)
         self.detail_text.config(yscrollcommand=self.detail_scrollbar.set)
 
-        self.detail_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        self.detail_text.pack(fill=tk.BOTH, expand=True)
+        self.detail_scrollbar.pack(side=ttk.RIGHT, fill=ttk.Y)
+        self.detail_text.pack(fill=ttk.BOTH, expand=True)
 
-        self.paned_window.add(self.tree_frame, width=500)
-        self.paned_window.add(self.detail_frame, width=500)
+        self.paned_window.add(self.tree_frame)
+        self.paned_window.add(self.detail_frame)
 
         self.file_path = ""
         self.level = None
@@ -108,38 +109,39 @@ class NBTExplorer:
         self.root.mainloop()
 
     def create_menu(self):
-        self.menu = tk.Menu(self.root)
+        self.menu = ttk.Menu(self.root)
         self.root.config(menu=self.menu)
 
-        self.menu_file = tk.Menu(self.menu, tearoff=0)
+        self.menu_file = ttk.Menu(self.menu, tearoff=0)
         self.menu.add_cascade(label="文件(F)", menu=self.menu_file)
 
         self.menu_file.add_command(label="打开(O)", command=self.open_file_dialog, accelerator="Ctrl+O")
-        self.menu_file.add_command(label="保存(S)", command=self.save_file, accelerator="Ctrl+S", state=tk.DISABLED)
+        self.menu_file.add_command(label="保存(S)", command=self.save_file, accelerator="Ctrl+S", state=ttk.DISABLED)
         self.menu_file.add_command(label="另存为(A)", command=self.save_file_as, accelerator="Ctrl+Shift+S",
-                                   state=tk.DISABLED)
+                                   state=ttk.DISABLED)
+        self.menu_file.add_command(label="设置(S)",command=lambda:os.system("python3 setting.py"),accelerator="Ctrl+S")
         self.menu_file.add_separator()
         self.menu_file.add_command(label="退出(X)", command=self.on_closing, accelerator="Alt+F4")
 
-        self.menu_edit = tk.Menu(self.menu, tearoff=0)
+        self.menu_edit = ttk.Menu(self.menu, tearoff=0)
         self.menu.add_cascade(label="编辑(E)", menu=self.menu_edit)
 
-        self.menu_edit.add_command(label="编辑节点(E)", command=self.edit_node, accelerator="Enter", state=tk.DISABLED)
-        self.menu_edit.add_command(label="添加节点(A)", command=self.add_node, accelerator="Ctrl+N", state=tk.DISABLED)
+        self.menu_edit.add_command(label="编辑节点(E)", command=self.edit_node, accelerator="Enter", state=ttk.DISABLED)
+        self.menu_edit.add_command(label="添加节点(A)", command=self.add_node, accelerator="Ctrl+N", state=ttk.DISABLED)
         self.menu_edit.add_command(label="删除节点(D)", command=self.delete_node, accelerator="Delete",
-                                   state=tk.DISABLED)
+                                   state=ttk.DISABLED)
 
-        self.menu_view = tk.Menu(self.menu, tearoff=0)
+        self.menu_view = ttk.Menu(self.menu, tearoff=0)
         self.menu.add_cascade(label="视图(V)", menu=self.menu_view)
 
         self.menu_view.add_command(label="刷新(R)", command=self.refresh_view, accelerator="F5")
 
-        self.menu_tools = tk.Menu(self.menu, tearoff=0)
+        self.menu_tools = ttk.Menu(self.menu, tearoff=0)
         self.menu.add_cascade(label="工具(T)", menu=self.menu_tools)
 
         self.menu_tools.add_command(label="查找(F)", command=self.focus_search, accelerator="Ctrl+F")
 
-        self.menu_help = tk.Menu(self.menu, tearoff=0)
+        self.menu_help = ttk.Menu(self.menu, tearoff=0)
         self.menu.add_cascade(label="帮助(H)", menu=self.menu_help)
 
         self.menu_help.add_command(label="关于 PyNBTExplorer", command=self.show_about)
@@ -153,37 +155,37 @@ class NBTExplorer:
         self.root.bind("<Control-f>", lambda e: self.focus_search())
 
     def create_toolbar(self):
-        self.toolbar = tk.Frame(self.root, bd=1, relief=tk.RAISED)
-        self.toolbar.pack(side=tk.TOP, fill=tk.X)
+        self.toolbar = ttk.Frame(self.root, relief=ttk.RAISED)
+        self.toolbar.pack(side=ttk.TOP, fill=ttk.X)
 
-        self.btn_open = tk.Button(self.toolbar, text="打开", command=self.open_file_dialog)
-        self.btn_open.pack(side=tk.LEFT, padx=2, pady=2)
+        self.btn_open = ttk.Button(self.toolbar, text="打开", command=self.open_file_dialog)
+        self.btn_open.pack(side=ttk.LEFT, padx=2, pady=2)
 
-        self.btn_save = tk.Button(self.toolbar, text="保存", command=self.save_file, state=tk.DISABLED)
-        self.btn_save.pack(side=tk.LEFT, padx=2, pady=2)
+        self.btn_save = ttk.Button(self.toolbar, text="保存", command=self.save_file, state=ttk.DISABLED)
+        self.btn_save.pack(side=ttk.LEFT, padx=2, pady=2)
 
-        self.btn_refresh = tk.Button(self.toolbar, text="刷新", command=self.refresh_view)
-        self.btn_refresh.pack(side=tk.LEFT, padx=2, pady=2)
+        self.btn_refresh = ttk.Button(self.toolbar, text="刷新", command=self.refresh_view)
+        self.btn_refresh.pack(side=ttk.LEFT, padx=2, pady=2)
 
-        tk.Label(self.toolbar, text="|").pack(side=tk.LEFT, padx=5)
+        ttk.Label(self.toolbar, text="|").pack(side=ttk.LEFT, padx=5)
 
-        self.btn_edit = tk.Button(self.toolbar, text="编辑", command=self.edit_node, state=tk.DISABLED)
-        self.btn_edit.pack(side=tk.LEFT, padx=2, pady=2)
+        self.btn_edit = ttk.Button(self.toolbar, text="编辑", command=self.edit_node, state=ttk.DISABLED)
+        self.btn_edit.pack(side=ttk.LEFT, padx=2, pady=2)
 
-        self.btn_add = tk.Button(self.toolbar, text="添加", command=self.add_node, state=tk.DISABLED)
-        self.btn_add.pack(side=tk.LEFT, padx=2, pady=2)
+        self.btn_add = ttk.Button(self.toolbar, text="添加", command=self.add_node, state=ttk.DISABLED)
+        self.btn_add.pack(side=ttk.LEFT, padx=2, pady=2)
 
-        self.btn_delete = tk.Button(self.toolbar, text="删除", command=self.delete_node, state=tk.DISABLED)
-        self.btn_delete.pack(side=tk.LEFT, padx=2, pady=2)
+        self.btn_delete = ttk.Button(self.toolbar, text="删除", command=self.delete_node, state=ttk.DISABLED)
+        self.btn_delete.pack(side=ttk.LEFT, padx=2, pady=2)
 
-        tk.Label(self.toolbar, text="|").pack(side=tk.LEFT, padx=5)
+        ttk.Label(self.toolbar, text="|").pack(side=ttk.LEFT, padx=5)
 
-        self.btn_find = tk.Button(self.toolbar, text="查找", command=self.focus_search)
-        self.btn_find.pack(side=tk.LEFT, padx=2, pady=2)
+        self.btn_find = ttk.Button(self.toolbar, text="查找", command=self.focus_search)
+        self.btn_find.pack(side=ttk.LEFT, padx=2, pady=2)
 
     def focus_search(self):
         self.search_entry.focus_set()
-        self.search_entry.select_range(0, tk.END)
+        self.search_entry.select_range(0, ttk.END)
 
     def open_file_dialog(self):
         file_path = filedialog.askopenfilename(
@@ -332,21 +334,21 @@ class NBTExplorer:
         item_text = self.tree.item(selected_item, "text")
         item_values = self.tree.item(selected_item, "values")
 
-        self.detail_text.config(state=tk.NORMAL)
-        self.detail_text.delete(1.0, tk.END)
-        self.detail_text.insert(tk.END, f"名称: {item_text}\n")
-        self.detail_text.insert(tk.END, f"类型: {item_values[0]}\n")
+        self.detail_text.config(state=ttk.NORMAL)
+        self.detail_text.delete(1.0, ttk.END)
+        self.detail_text.insert(ttk.END, f"名称: {item_text}\n")
+        self.detail_text.insert(ttk.END, f"类型: {item_values[0]}\n")
 
         if len(item_values) > 1 and item_values[1]:
-            self.detail_text.insert(tk.END, f"值: {item_values[1]}\n")
+            self.detail_text.insert(ttk.END, f"值: {item_values[1]}\n")
 
-        self.detail_text.insert(tk.END, "\n路径: " + self.get_item_path(selected_item))
+        self.detail_text.insert(ttk.END, "\n路径: " + self.get_item_path(selected_item))
 
         if selected_item in self.node_values:
             value = self.node_values[selected_item]
-            self.detail_text.insert(tk.END, f"\n原始值: {value!r}")
+            self.detail_text.insert(ttk.END, f"\n原始值: {value!r}")
 
-        self.detail_text.config(state=tk.DISABLED)
+        self.detail_text.config(state=ttk.DISABLED)
 
         self.enable_edit_controls(True)
 
@@ -373,43 +375,43 @@ class NBTExplorer:
         original_value = self.node_values[selected_item]
         original_value_str = self.get_value_string(original_value)
 
-        edit_win = tk.Toplevel(self.root)
+        edit_win = ttk.Toplevel(self.root)
         edit_win.title("编辑节点")
         edit_win.geometry("400x250")
         edit_win.transient(self.root)
         edit_win.grab_set()
 
-        name_frame = tk.Frame(edit_win)
-        name_frame.pack(fill=tk.X, padx=10, pady=5)
-        tk.Label(name_frame, text="名称:").pack(side=tk.LEFT)
-        name_var = tk.StringVar(value=item_text)
-        name_entry = tk.Entry(name_frame, textvariable=name_var, state="readonly")
-        name_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+        name_frame = ttk.Frame(edit_win)
+        name_frame.pack(fill=ttk.X, padx=10, pady=5)
+        ttk.Label(name_frame, text="名称:").pack(side=ttk.LEFT)
+        name_var = ttk.StringVar(value=item_text)
+        name_entry = ttk.Entry(name_frame, textvariable=name_var, state="readonly")
+        name_entry.pack(side=ttk.LEFT, fill=ttk.X, expand=True, padx=5)
 
-        type_frame = tk.Frame(edit_win)
-        type_frame.pack(fill=tk.X, padx=10, pady=5)
-        tk.Label(type_frame, text="类型:").pack(side=tk.LEFT)
-        type_var = tk.StringVar(value=item_type)
-        type_entry = tk.Entry(type_frame, textvariable=type_var, state="readonly")
-        type_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+        type_frame = ttk.Frame(edit_win)
+        type_frame.pack(fill=ttk.X, padx=10, pady=5)
+        ttk.Label(type_frame, text="类型:").pack(side=ttk.LEFT)
+        type_var = ttk.StringVar(value=item_type)
+        type_entry = ttk.Entry(type_frame, textvariable=type_var, state="readonly")
+        type_entry.pack(side=ttk.LEFT, fill=ttk.X, expand=True, padx=5)
 
-        value_frame = tk.Frame(edit_win)
-        value_frame.pack(fill=tk.X, padx=10, pady=5)
-        tk.Label(value_frame, text="值:").pack(side=tk.LEFT)
-        value_var = tk.StringVar(value=original_value_str)
-        value_entry = tk.Entry(value_frame, textvariable=value_var)
-        value_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
-        value_entry.select_range(0, tk.END)
+        value_frame = ttk.Frame(edit_win)
+        value_frame.pack(fill=ttk.X, padx=10, pady=5)
+        ttk.Label(value_frame, text="值:").pack(side=ttk.LEFT)
+        value_var = ttk.StringVar(value=original_value_str)
+        value_entry = ttk.Entry(value_frame, textvariable=value_var)
+        value_entry.pack(side=ttk.LEFT, fill=ttk.X, expand=True, padx=5)
+        value_entry.select_range(0, ttk.END)
         value_entry.focus_set()
 
-        orig_frame = tk.Frame(edit_win)
-        orig_frame.pack(fill=tk.X, padx=10, pady=5)
-        tk.Label(orig_frame, text="原始值:").pack(side=tk.LEFT)
-        orig_var = tk.StringVar(value=str(original_value))
-        orig_entry = tk.Entry(orig_frame, textvariable=orig_var, state="readonly")
-        orig_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+        orig_frame = ttk.Frame(edit_win)
+        orig_frame.pack(fill=ttk.X, padx=10, pady=5)
+        ttk.Label(orig_frame, text="原始值:").pack(side=ttk.LEFT)
+        orig_var = ttk.StringVar(value=str(original_value))
+        orig_entry = ttk.Entry(orig_frame, textvariable=orig_var, state="readonly")
+        orig_entry.pack(side=ttk.LEFT, fill=ttk.X, expand=True, padx=5)
 
-        button_frame = tk.Frame(edit_win)
+        button_frame = ttk.Frame(edit_win)
         button_frame.pack(pady=10)
 
         def save_changes():
@@ -429,8 +431,8 @@ class NBTExplorer:
             except Exception as e:
                 messagebox.showerror("编辑错误", f"无法更新值: {str(e)}")
 
-        tk.Button(button_frame, text="确定", command=save_changes, width=10).pack(side=tk.LEFT, padx=10)
-        tk.Button(button_frame, text="取消", command=edit_win.destroy, width=10).pack(side=tk.LEFT, padx=10)
+        ttk.Button(button_frame, text="确定", command=save_changes, width=10).pack(side=ttk.LEFT, padx=10)
+        ttk.Button(button_frame, text="取消", command=edit_win.destroy, width=10).pack(side=ttk.LEFT, padx=10)
 
     def update_nbt_value(self, item_id, new_value):
 
@@ -480,36 +482,36 @@ class NBTExplorer:
             messagebox.showwarning("添加节点", "只能在Compound节点下添加新节点")
             return
 
-        add_win = tk.Toplevel(self.root)
+        add_win = ttk.Toplevel(self.root)
         add_win.title("添加新节点")
         add_win.geometry("400x250")
         add_win.transient(self.root)
         add_win.grab_set()
 
-        key_frame = tk.Frame(add_win)
-        key_frame.pack(fill=tk.X, padx=10, pady=10)
-        tk.Label(key_frame, text="键名:").pack(side=tk.LEFT)
-        key_var = tk.StringVar()
-        key_entry = tk.Entry(key_frame, textvariable=key_var)
-        key_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+        key_frame = ttk.Frame(add_win)
+        key_frame.pack(fill=ttk.X, padx=10, pady=10)
+        ttk.Label(key_frame, text="键名:").pack(side=ttk.LEFT)
+        key_var = ttk.StringVar()
+        key_entry = ttk.Entry(key_frame, textvariable=key_var)
+        key_entry.pack(side=ttk.LEFT, fill=ttk.X, expand=True, padx=5)
         key_entry.focus_set()
 
-        type_frame = tk.Frame(add_win)
-        type_frame.pack(fill=tk.X, padx=10, pady=5)
-        tk.Label(type_frame, text="类型:").pack(side=tk.LEFT)
+        type_frame = ttk.Frame(add_win)
+        type_frame.pack(fill=ttk.X, padx=10, pady=5)
+        ttk.Label(type_frame, text="类型:").pack(side=ttk.LEFT)
 
-        type_var = tk.StringVar(value="String")
+        type_var = ttk.StringVar(value="String")
         types = ["String", "Int", "Float", "Double", "Byte", "Short", "Long", "Compound"]
         type_menu = ttk.Combobox(type_frame, textvariable=type_var, values=types, state="readonly")
-        type_menu.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+        type_menu.pack(side=ttk.LEFT, fill=ttk.X, expand=True, padx=5)
 
-        value_frame = tk.Frame(add_win)
-        value_frame.pack(fill=tk.X, padx=10, pady=10)
-        tk.Label(value_frame, text="值:").pack(side=tk.LEFT)
-        value_var = tk.StringVar(value="")
-        value_entry = tk.Entry(value_frame, textvariable=value_var)
-        value_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
-        hint_label = tk.Label(add_win, text="对于Compound类型，值将被忽略", fg="gray")
+        value_frame = ttk.Frame(add_win)
+        value_frame.pack(fill=ttk.X, padx=10, pady=10)
+        ttk.Label(value_frame, text="值:").pack(side=ttk.LEFT)
+        value_var = ttk.StringVar(value="")
+        value_entry = ttk.Entry(value_frame, textvariable=value_var)
+        value_entry.pack(side=ttk.LEFT, fill=ttk.X, expand=True, padx=5)
+        hint_label = ttk.Label(add_win, text="对于Compound类型，值将被忽略", fg="gray")
         hint_label.pack(pady=5)
 
         def update_hint(*args):
@@ -522,7 +524,7 @@ class NBTExplorer:
 
         type_var.trace("w", update_hint)
         update_hint()
-        button_frame = tk.Frame(add_win)
+        button_frame = ttk.Frame(add_win)
         button_frame.pack(pady=10)
 
         def add_new_node():
@@ -562,8 +564,8 @@ class NBTExplorer:
             except Exception as e:
                 messagebox.showerror("添加节点错误", f"无法添加节点: {str(e)}")
 
-        tk.Button(button_frame, text="添加", command=add_new_node, width=10).pack(side=tk.LEFT, padx=10)
-        tk.Button(button_frame, text="取消", command=add_win.destroy, width=10).pack(side=tk.LEFT, padx=10)
+        ttk.Button(button_frame, text="添加", command=add_new_node, width=10).pack(side=ttk.LEFT, padx=10)
+        ttk.Button(button_frame, text="取消", command=add_win.destroy, width=10).pack(side=ttk.LEFT, padx=10)
 
     def add_to_nbt(self, parent_id, key, value):
         parent_path = self.node_paths[parent_id]
@@ -693,7 +695,7 @@ class NBTExplorer:
         self.status_var.set(message)
 
     def enable_edit_controls(self, enabled):
-        state = tk.NORMAL if enabled else tk.DISABLED
+        state = ttk.NORMAL if enabled else ttk.DISABLED
         self.menu_file.entryconfig("保存(S)", state=state)
         self.menu_file.entryconfig("另存为(A)", state=state)
         self.menu_edit.entryconfig("编辑节点(E)", state=state)
@@ -708,11 +710,11 @@ class NBTExplorer:
     def show_about(self):
         about_text = (
             "PyNBTExplorer\n"
-            "版本: 1.0 for MacOS\n\n"
+            "版本: 1.1\n\n"
             "一个用Python实现的NBT文件浏览器\n"
             "使用tkinter作为UI框架，nbtlib处理NBT文件\n\n"
             "主要功能:\n"
-            "- 浏览NBT文件\n"
+            "- 浏览编辑NBT文件\n"
         )
         messagebox.showinfo("关于 PyNBTExplorer", about_text)
 
