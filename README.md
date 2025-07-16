@@ -11,3 +11,4 @@ pip install nbtlib
 ```bash
 python3 main.py
 ```
+有问题欢迎提交issues
