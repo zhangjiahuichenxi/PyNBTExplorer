@@ -13,3 +13,11 @@ pip install pillow
 python3 main.py
 ```
 有问题欢迎提交issues
+## 编译
+#### 1.克隆此项目或下载main.py和main.spec
+#### 2.构建项目
+```bash
+# 若安装pyinstaller先安装
+# pip install pyinstaller
+pyinstaller main.spec
+```
