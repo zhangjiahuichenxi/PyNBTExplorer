@@ -7,7 +7,6 @@ import subprocess
 import os
 import config
 import re
-from PIL import Image, ImageTk
 
 
 class NBTExplorer:
