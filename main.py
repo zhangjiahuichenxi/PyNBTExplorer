@@ -451,23 +451,23 @@ class NBTExplorer:
 
     def convert_value(self, type_str, value_str):
         if type_str == "Int":
-            return Int(int(value_str))
+            return Int(int(value_str.split("(")[-1].split(")")[0]))
         elif type_str == "Float":
-            return Float(float(value_str))
+            return Float(float(value_str.split("(")[-1].split(")")[0]))
         elif type_str == "Double":
-            return Double(float(value_str))
+            return Double(float(value_str.split("(")[-1].split(")")[0]))
         elif type_str == "Byte":
-            return Byte(int(value_str))
+            return Byte(int(value_str.split("(")[-1].split(")")[0]))
         elif type_str == "Short":
-            return Short(int(value_str))
+            return Short(int(value_str.split("(")[-1].split(")")[0]))
         elif type_str == "Long":
-            return Long(int(value_str))
+            return Long(int(value_str.split("(")[-1].split(")")[0]))
         elif type_str == "String":
 
             if value_str.startswith('"') and value_str.endswith('"'):
                 value_str = value_str[1:-1]
-            return String(value_str)
-        return value_str
+            return String(value_str.split("(")[-1].split(")")[0])
+        return value_str.split("(")[-1].split(")")[0]
 
     def add_node(self):
         selected_item = self.tree.focus()
@@ -708,16 +708,11 @@ class NBTExplorer:
     def show_about(self):
         about_text = (
             "PyNBTExplorer\n"
-            "版本: 1.0\n\n"
+            "版本: 1.0 for MacOS\n\n"
             "一个用Python实现的NBT文件浏览器\n"
             "使用tkinter作为UI框架，nbtlib处理NBT文件\n\n"
             "主要功能:\n"
-            "- 浏览NBT文件结构\n"
-            "- 查看节点详细信息\n"
-            "- 编辑节点值\n"
-            "- 添加/删除节点\n"
-            "- 查找节点\n"
-            "- 保存修改后的文件\n\n"
+            "- 浏览NBT文件\n"
         )
         messagebox.showinfo("关于 PyNBTExplorer", about_text)
 
